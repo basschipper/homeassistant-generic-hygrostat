@@ -1,0 +1,9 @@
+{
+    "generic_hygrostat": {
+      "version": "0.1.0",
+      "local_location": "/custom_components/generic_hygrostat/binary_sensor.py",
+      "remote_location": "https://github.com/basschipper/homeassistant-generic-hygrostat/master/generic_hygrostat/binary_sensor.py",
+      "visit_repo": "https://github.com/basschipper/homeassistant-generic-hygrostat/",
+      "changelog": "https://github.com/basschipper/homeassistant-generic-hygrostat/releases/latest"
+    }
+}
