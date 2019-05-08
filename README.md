@@ -55,5 +55,4 @@ custom_updater:
     - components
   component_urls:
     - https://raw.githubusercontent.com/basschipper/homeassistant-generic-hygrostat/master/hygrostat_updater.json
-
 ```

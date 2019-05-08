@@ -125,7 +125,7 @@ class GenericHygrostat(Entity):
                 self.sensor_id, STATE_UNKNOWN))
 
         try:
-            self.sensor_humidity = int(sensor.state)
+            self.sensor_humidity = float(sensor.state)
             self.add_sample(self.sensor_humidity)
         except ValueError:
             raise ValueError(
