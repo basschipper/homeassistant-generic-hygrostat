@@ -10,9 +10,9 @@ binary_sensor:
 - platform: generic_hygrostat
   name: Bathroom Hygrostat
   sensor: sensor.bathroom_climate_humidityy # Source humidity sensor
-    delta_trigger: 3 # Optional humidity swing to detect
-    target_offset: 3 # Optional dehumidification target offset
-    max_on_time: 7200 # Optional # Optional safety max on time
+  delta_trigger: 3 # Optional humidity swing to detect
+  target_offset: 3 # Optional dehumidification target offset
+  max_on_time: 7200 # Optional # Optional safety max on time
 ```
 It will create a binary sensor called `binary_sensor.bathroom_hygrostat`. 
 Next, add some automations to switch your fan:
