@@ -18,7 +18,7 @@ binary_sensor:
   delta_trigger: 3 # Optional humidity swing to detect. Default = 3
   target_offset: 3 # Optional dehumidification target offset. Default = 3
   max_on_time: 7200 # Optional safety max on time in seconds. Default = 7200 seconds
-  sample_interval: 60 # Optional time between taking humidity samples in seconds, default 300 seconds
+  sample_interval: 300 # Optional time between taking humidity samples in seconds, default 300 seconds
 ```
 It will create a binary sensor called `binary_sensor.bathroom_hygrostat`. 
 Next, add some automations to switch your fan:
