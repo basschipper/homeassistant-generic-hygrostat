@@ -36,6 +36,7 @@ CONF_DELTA_TRIGGER = 'delta_trigger'
 CONF_TARGET_OFFSET = 'target_offset'
 CONF_MAX_ON_TIME = 'max_on_time'
 CONF_SAMPLE_INTERVAL = 'sample_interval'
+CONF_MUTLI_SHOWER_DETECT = 'multi_shower_detect'
 
 DEFAULT_DELTA_TRIGGER = 3
 DEFAULT_TARGET_OFFSET = 3
@@ -65,6 +66,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     target_offset = config.get(CONF_TARGET_OFFSET)
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
+    multi_shower_detect = config.get(CONF_MUTLI_SHOWER_DETECT)
 
     async_add_devices([GenericHygrostat(
         hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval)])
@@ -171,7 +173,9 @@ class GenericHygrostat(Entity):
 
     def set_max_on_timer(self):
         """Setting max on timer."""
-        if self.max_on_timer is None:
+        if self.multi_shower_detect (y):
+            self.max_on_timer = datetime.now() + self.max_on_time
+        elif self.max_on_timer is None:
             self.max_on_timer = datetime.now() + self.max_on_time
 
     def reset_max_on_timer(self):
