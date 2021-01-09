@@ -54,6 +54,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         cv.time_period,
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
         cv.time_period
+    vol.Optional(CONF_MUTLI_SHOWER_DETECT): cv.string,
 })
 
 
