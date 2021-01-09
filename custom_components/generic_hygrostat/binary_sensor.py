@@ -87,7 +87,7 @@ class GenericHygrostat(Entity):
         self.delta_trigger = delta_trigger
         self.target_offset = target_offset
         self.max_on_time = max_on_time
-        self.multi_shower_detect - multi_shower_detect
+        self.multi_shower_detect = multi_shower_detect
 
         self.sensor_humidity = None
         self.target = None
