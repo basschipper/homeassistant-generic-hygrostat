@@ -54,7 +54,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         cv.time_period,
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
         cv.time_period
-    vol.Optional(CONF_MUTLI_SHOWER_DETECT): cv.string,
+    vol.Optional(CONF_MUTLI_SHOWER_DETECT), default=DEFAULT_MUTLI_SHOWER_DETECT):
+        cv.string,
 })
 
 
@@ -70,14 +71,14 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     multi_shower_detect = config.get(CONF_MUTLI_SHOWER_DETECT)
 
     async_add_devices([GenericHygrostat(
-        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval)])
+        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, multi_shower_detect)])
 
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
     def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
-                 max_on_time, sample_interval):
+                 max_on_time, sample_interval, multi_shower_detect):
         """Initialize the hygrostat."""
         self.hass = hass
         self._name = name
@@ -85,6 +86,7 @@ class GenericHygrostat(Entity):
         self.delta_trigger = delta_trigger
         self.target_offset = target_offset
         self.max_on_time = max_on_time
+        self.multi_shower_detect - multi_shower_detect
 
         self.sensor_humidity = None
         self.target = None
