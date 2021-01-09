@@ -53,9 +53,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_MAX_ON_TIME, default=DEFAULT_MAX_ON_TIME):
         cv.time_period,
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
-        cv.time_period
+        cv.time_period,
     vol.Optional(CONF_MUTLI_SHOWER_DETECT, default=DEFAULT_MUTLI_SHOWER_DETECT):
-        cv.string,
+        cv.string
 })
 
 
