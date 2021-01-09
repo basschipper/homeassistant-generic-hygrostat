@@ -36,13 +36,13 @@ CONF_DELTA_TRIGGER = 'delta_trigger'
 CONF_TARGET_OFFSET = 'target_offset'
 CONF_MAX_ON_TIME = 'max_on_time'
 CONF_SAMPLE_INTERVAL = 'sample_interval'
-CONF_MUTLI_SHOWER_DETECT = 'multi_shower_detect'
+CONF_MULTI_SHOWER_DETECT = 'multi_shower_detect'
 
 DEFAULT_DELTA_TRIGGER = 3
 DEFAULT_TARGET_OFFSET = 3
 DEFAULT_MAX_ON_TIME = timedelta(seconds=7200)
 DEFAULT_SAMPLE_INTERVAL = timedelta(minutes=5)
-DEFAULT_MUTLI_SHOWER_DETECT = 'no'
+DEFAULT_MULTI_SHOWER_DETECT = 'no'
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_NAME): cv.string,
@@ -55,7 +55,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         cv.time_period,
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
         cv.time_period,
-    vol.Optional(CONF_MUTLI_SHOWER_DETECT, default=DEFAULT_MUTLI_SHOWER_DETECT):
+    vol.Optional(CONF_MULTI_SHOWER_DETECT, default=DEFAULT_MULTI_SHOWER_DETECT):
         cv.string
 })
 
@@ -69,7 +69,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     target_offset = config.get(CONF_TARGET_OFFSET)
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
-    multi_shower_detect = config.get(CONF_MUTLI_SHOWER_DETECT)
+    multi_shower_detect = config.get(CONF_MULTI_SHOWER_DETECT)
 
     async_add_devices([GenericHygrostat(
         hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, multi_shower_detect)])
