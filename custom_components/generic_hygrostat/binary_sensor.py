@@ -75,7 +75,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
     min_humidity = config.get(CONF_MIN_HUMIDITY)
-	multi_shower_detect = config.get(CONF_MULTI_SHOWER_DETECT)
+    multi_shower_detect = config.get(CONF_MULTI_SHOWER_DETECT)
 
     async_add_devices([GenericHygrostat(
         hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, min_humidity, multi_shower_detect)])
@@ -85,8 +85,7 @@ class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
     def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
-                 max_on_time, sample_interval, min_humidity, multi_shower_detect):
-                 max_on_time, sample_interval):
+				 max_on_time, sample_interval, min_humidity, multi_shower_detect):
         """Initialize the hygrostat."""
         self.hass = hass
         self._name = name
