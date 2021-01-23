@@ -59,7 +59,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
         cv.time_period,
     vol.Optional(CONF_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY):
-        vol.Coerce(float)
+        vol.Coerce(float),
     vol.Optional(CONF_MULTI_SHOWER_DETECT, default=DEFAULT_MULTI_SHOWER_DETECT):
         cv.string
 })
