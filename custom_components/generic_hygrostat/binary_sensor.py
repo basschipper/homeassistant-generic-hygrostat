@@ -27,14 +27,16 @@ SAMPLE_DURATION = timedelta(minutes=15)
 DEFAULT_NAME = 'Generic Hygrostat'
 
 ATTR_NUMBER_OF_SAMPLES = 'number_of_samples'
-ATTR_MIN_HUMIDITY = 'min_humidity'
+ATTR_LOWEST_SAMPLE = 'lowest_sample'
 ATTR_TARGET = 'target'
 ATTR_MAX_ON_TIMER = 'max_on_timer'
+ATTR_MIN_HUMIDITY = 'min_humidity'
 
 CONF_SENSOR = 'sensor'
 CONF_DELTA_TRIGGER = 'delta_trigger'
 CONF_TARGET_OFFSET = 'target_offset'
 CONF_MAX_ON_TIME = 'max_on_time'
+CONF_MIN_HUMIDITY = 'min_humidity'
 CONF_SAMPLE_INTERVAL = 'sample_interval'
 CONF_MULTI_SHOWER_DETECT = 'multi_shower_detect'
 
@@ -42,6 +44,7 @@ DEFAULT_DELTA_TRIGGER = 3
 DEFAULT_TARGET_OFFSET = 3
 DEFAULT_MAX_ON_TIME = timedelta(seconds=7200)
 DEFAULT_SAMPLE_INTERVAL = timedelta(minutes=5)
+DEFAULT_MIN_HUMIDITY = 0
 DEFAULT_MULTI_SHOWER_DETECT = 'no'
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -55,6 +58,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         cv.time_period,
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
         cv.time_period,
+    vol.Optional(CONF_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY):
+        vol.Coerce(float)
     vol.Optional(CONF_MULTI_SHOWER_DETECT, default=DEFAULT_MULTI_SHOWER_DETECT):
         cv.string
 })
@@ -69,17 +74,19 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     target_offset = config.get(CONF_TARGET_OFFSET)
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
-    multi_shower_detect = config.get(CONF_MULTI_SHOWER_DETECT)
+    min_humidity = config.get(CONF_MIN_HUMIDITY)
+	multi_shower_detect = config.get(CONF_MULTI_SHOWER_DETECT)
 
     async_add_devices([GenericHygrostat(
-        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, multi_shower_detect)])
+        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, min_humidity, multi_shower_detect)])
 
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
     def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
-                 max_on_time, sample_interval, multi_shower_detect):
+                 max_on_time, sample_interval, min_humidity, multi_shower_detect):
+                 max_on_time, sample_interval):
         """Initialize the hygrostat."""
         self.hass = hass
         self._name = name
@@ -87,6 +94,7 @@ class GenericHygrostat(Entity):
         self.delta_trigger = delta_trigger
         self.target_offset = target_offset
         self.max_on_time = max_on_time
+        self.min_humidity = min_humidity
         self.multi_shower_detect = multi_shower_detect
 
         self.sensor_humidity = None
@@ -94,6 +102,7 @@ class GenericHygrostat(Entity):
         sample_size = int(SAMPLE_DURATION / sample_interval)
         self.samples = collections.deque([], sample_size)
         self.max_on_timer = None
+
 
         self._state = STATE_OFF
         self._icon = 'mdi:water-percent'
@@ -110,20 +119,28 @@ class GenericHygrostat(Entity):
             _LOGGER.warning(ex)
             return
 
-        if self.calc_delta() >= self.delta_trigger:
-            _LOGGER.debug("Humidity rise detected at '%s' with delta '%s'",
-                          self.name, self.calc_delta())
-            self.set_on()
-
         if self.target and self.sensor_humidity <= self.target:
             _LOGGER.debug("Dehumidifying target reached for '%s'",
                           self.name)
             self.set_off()
+            return
 
         if self.max_on_timer and self.max_on_timer < datetime.now():
             _LOGGER.debug("Max on timer reached for '%s'",
                           self.name)
             self.set_off()
+            return
+
+        if (self.sensor_humidity < self.min_humidity):
+            _LOGGER.debug("Humidity '%s' is below minimum humidity '%s'",
+                          self.sensor_humidity, self.min_humidity)
+            return
+
+        if self.calc_delta() >= self.delta_trigger:
+            _LOGGER.debug("Humidity rise detected at '%s' with delta '%s'",
+                          self.name, self.calc_delta())
+            self.set_on()
+            return
 
     def update_humidity(self):
         """Update local humidity state from source sensor."""
@@ -151,9 +168,9 @@ class GenericHygrostat(Entity):
 
     def calc_delta(self):
         """Calculate the humidity delta."""
-        return self.sensor_humidity - self.get_minimum()
+        return self.sensor_humidity - self.get_lowest_sample()
 
-    def get_minimum(self):
+    def get_lowest_sample(self):
         """Return the lowest humidity sample."""
         try:
             return min(self.samples)
@@ -163,7 +180,10 @@ class GenericHygrostat(Entity):
     def set_dehumidification_target(self):
         """Setting dehumidification target to min humidity sample + offset."""
         if self.target is None:
-            self.target = min(self.samples) + self.target_offset
+            if self.min_humidity >= min(self.samples) + self.target_offset:
+                self.target = self.min_humidity
+            else:
+                self.target = min(self.samples) + self.target_offset
 
     def reset_dehumidification_target(self):
         """Unsetting dehumidification target."""
@@ -218,7 +238,8 @@ class GenericHygrostat(Entity):
         """Return the attributes of the entity."""
         return {
             ATTR_NUMBER_OF_SAMPLES: len(self.samples),
-            ATTR_MIN_HUMIDITY: self.get_minimum(),
+            ATTR_LOWEST_SAMPLE: self.get_lowest_sample(),
             ATTR_TARGET: self.target,
-            ATTR_MAX_ON_TIMER: self.max_on_timer
+            ATTR_MAX_ON_TIMER: self.max_on_timer,
+            ATTR_MIN_HUMIDITY: self.min_humidity
         }
