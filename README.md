@@ -22,7 +22,7 @@ binary_sensor:
   max_on_time: 7200 # Optional safety max on time in seconds. Default = 7200 seconds
   sample_interval: 300 # Optional time between taking humidity samples in seconds, default 300 seconds
   min_humidity: 30 # Optional minimum humidity to enable dehumidification. Default = 0
-  multi_shower_detect: y # Optional. y = yes, anything else will be ignored. Resets value set by max_on_time if subsequent shower use is detected
+  subsq_shower_detect: y # Optional. y = yes, anything else will be ignored. Resets value set by max_on_time if subsequent shower use is detected
 ```
 It will create a binary sensor called `binary_sensor.bathroom_hygrostat`.
 Next, add some automations to switch your fan:
