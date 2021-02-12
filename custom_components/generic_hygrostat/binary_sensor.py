@@ -38,14 +38,14 @@ CONF_TARGET_OFFSET = 'target_offset'
 CONF_MAX_ON_TIME = 'max_on_time'
 CONF_MIN_HUMIDITY = 'min_humidity'
 CONF_SAMPLE_INTERVAL = 'sample_interval'
-CONF_MULTI_SHOWER_DETECT = 'multi_shower_detect'
+CONF_SUBSQ_SHOWER_DETECT = 'subsq_shower_detect'
 
 DEFAULT_DELTA_TRIGGER = 3
 DEFAULT_TARGET_OFFSET = 3
 DEFAULT_MAX_ON_TIME = timedelta(seconds=7200)
 DEFAULT_SAMPLE_INTERVAL = timedelta(minutes=5)
 DEFAULT_MIN_HUMIDITY = 0
-DEFAULT_MULTI_SHOWER_DETECT = 'no'
+DEFAULT_SUBSQ_SHOWER_DETECT = 'no'
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_NAME): cv.string,
@@ -60,7 +60,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         cv.time_period,
     vol.Optional(CONF_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY):
         vol.Coerce(float),
-    vol.Optional(CONF_MULTI_SHOWER_DETECT, default=DEFAULT_MULTI_SHOWER_DETECT):
+    vol.Optional(CONF_SUBSQ_SHOWER_DETECT, default=DEFAULT_SUBSQ_SHOWER_DETECT):
         cv.string
 })
 
@@ -75,17 +75,17 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
     min_humidity = config.get(CONF_MIN_HUMIDITY)
-    multi_shower_detect = config.get(CONF_MULTI_SHOWER_DETECT)
+    subsq_shower_detect = config.get(CONF_SUBSQ_SHOWER_DETECT)
 
     async_add_devices([GenericHygrostat(
-        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, min_humidity, multi_shower_detect)])
+        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, min_humidity, subsq_shower_detect)])
 
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
     def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
-				 max_on_time, sample_interval, min_humidity, multi_shower_detect):
+				 max_on_time, sample_interval, min_humidity, subsq_shower_detect):
         """Initialize the hygrostat."""
         self.hass = hass
         self._name = name
@@ -94,7 +94,7 @@ class GenericHygrostat(Entity):
         self.target_offset = target_offset
         self.max_on_time = max_on_time
         self.min_humidity = min_humidity
-        self.multi_shower_detect = multi_shower_detect
+        self.subsq_shower_detect = subsq_shower_detect
 
         self.sensor_humidity = None
         self.target = None
@@ -198,7 +198,7 @@ class GenericHygrostat(Entity):
         """Setting max on timer."""
         if self.max_on_timer is None:
             self.max_on_timer = datetime.now() + self.max_on_time
-        elif self.multi_shower_detect is 'y':
+        elif self.subsq_shower_detect is 'y':
             self.max_on_timer = datetime.now() + self.max_on_time
 
     def reset_max_on_timer(self):
