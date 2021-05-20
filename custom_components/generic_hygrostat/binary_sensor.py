@@ -120,7 +120,12 @@ class GenericHygrostat(Entity):
             _LOGGER.warning(ex)
             return
 
-        if self.target and self.sensor_humidity <= self.target and (self.min_on_timer is None or self.min_on_timer < datetime.now()):
+        if self.min_on_timer and self.min_on_timer > datetime.now():
+            _LOGGER.debug("Minimum time on not yet met for '%s'",
+                          self.name)
+            return
+
+        if self.target and self.sensor_humidity <= self.target:
             _LOGGER.debug("Dehumidifying target reached for '%s'",
                           self.name)
             self.set_off()
