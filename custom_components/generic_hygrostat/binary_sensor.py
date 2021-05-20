@@ -29,12 +29,14 @@ DEFAULT_NAME = 'Generic Hygrostat'
 ATTR_NUMBER_OF_SAMPLES = 'number_of_samples'
 ATTR_LOWEST_SAMPLE = 'lowest_sample'
 ATTR_TARGET = 'target'
+ATTR_MIN_ON_TIMER = 'min_on_timer'
 ATTR_MAX_ON_TIMER = 'max_on_timer'
 ATTR_MIN_HUMIDITY = 'min_humidity'
 
 CONF_SENSOR = 'sensor'
 CONF_DELTA_TRIGGER = 'delta_trigger'
 CONF_TARGET_OFFSET = 'target_offset'
+CONF_MIN_ON_TIME = 'min_on_time'
 CONF_MAX_ON_TIME = 'max_on_time'
 CONF_MIN_HUMIDITY = 'min_humidity'
 
@@ -42,6 +44,7 @@ CONF_SAMPLE_INTERVAL = 'sample_interval'
 
 DEFAULT_DELTA_TRIGGER = 3
 DEFAULT_TARGET_OFFSET = 3
+DEFAULT_MIN_ON_TIME = timedelta(seconds=0)
 DEFAULT_MAX_ON_TIME = timedelta(seconds=7200)
 DEFAULT_SAMPLE_INTERVAL = timedelta(minutes=5)
 DEFAULT_MIN_HUMIDITY = 0
@@ -53,6 +56,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         vol.Coerce(float),
     vol.Optional(CONF_TARGET_OFFSET, default=DEFAULT_TARGET_OFFSET):
         vol.Coerce(float),
+    vol.Optional(CONF_MIN_ON_TIME, default=DEFAULT_MIN_ON_TIME):
+        cv.time_period,
     vol.Optional(CONF_MAX_ON_TIME, default=DEFAULT_MAX_ON_TIME):
         cv.time_period,
     vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL):
@@ -69,25 +74,27 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     sensor_id = config.get(CONF_SENSOR)
     delta_trigger = config.get(CONF_DELTA_TRIGGER)
     target_offset = config.get(CONF_TARGET_OFFSET)
+    min_on_time = config.get(CONF_MIN_ON_TIME)
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
     min_humidity = config.get(CONF_MIN_HUMIDITY)
 
     async_add_devices([GenericHygrostat(
-        hass, name, sensor_id, delta_trigger, target_offset, max_on_time, sample_interval, min_humidity)])
+        hass, name, sensor_id, delta_trigger, target_offset, min_on_time, max_on_time, sample_interval, min_humidity)])
 
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
     def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
-                 max_on_time, sample_interval, min_humidity):
+                 min_on_time, max_on_time, sample_interval, min_humidity):
         """Initialize the hygrostat."""
         self.hass = hass
         self._name = name
         self.sensor_id = sensor_id
         self.delta_trigger = delta_trigger
         self.target_offset = target_offset
+        self.min_on_time = min_on_time
         self.max_on_time = max_on_time
         self.min_humidity = min_humidity
 
@@ -95,8 +102,8 @@ class GenericHygrostat(Entity):
         self.target = None
         sample_size = int(SAMPLE_DURATION / sample_interval)
         self.samples = collections.deque([], sample_size)
+        self.min_on_timer = None
         self.max_on_timer = None
-
 
         self._state = STATE_OFF
         self._icon = 'mdi:water-percent'
@@ -113,7 +120,7 @@ class GenericHygrostat(Entity):
             _LOGGER.warning(ex)
             return
 
-        if self.target and self.sensor_humidity <= self.target:
+        if self.target and self.sensor_humidity <= self.target and (self.min_on_timer is None or self.min_on_timer < datetime.now()):
             _LOGGER.debug("Dehumidifying target reached for '%s'",
                           self.name)
             self.set_off()
@@ -189,6 +196,15 @@ class GenericHygrostat(Entity):
             self._state = state
             self.schedule_update_ha_state()
 
+    def set_min_on_timer(self):
+        """Setting min on timer."""
+        if self.min_on_timer is None:
+            self.min_on_timer = datetime.now() + self.min_on_time
+
+    def reset_min_on_timer(self):
+        """Unsetting min on timer."""
+        self.min_on_timer = None
+
     def set_max_on_timer(self):
         """Setting max on timer."""
         if self.max_on_timer is None:
@@ -202,12 +218,14 @@ class GenericHygrostat(Entity):
         """Setting hygrostat to on."""
         self.set_state(STATE_ON)
         self.set_dehumidification_target()
+        self.set_min_on_timer()
         self.set_max_on_timer()
 
     def set_off(self):
         """Setting hygrostat to off."""
         self.set_state(STATE_OFF)
         self.reset_dehumidification_target()
+        self.reset_min_on_timer()
         self.reset_max_on_timer()
 
     @property
@@ -232,6 +250,7 @@ class GenericHygrostat(Entity):
             ATTR_NUMBER_OF_SAMPLES: len(self.samples),
             ATTR_LOWEST_SAMPLE: self.get_lowest_sample(),
             ATTR_TARGET: self.target,
+            ATTR_MIN_ON_TIMER: self.min_on_timer,
             ATTR_MAX_ON_TIMER: self.max_on_timer,
             ATTR_MIN_HUMIDITY: self.min_humidity
         }
