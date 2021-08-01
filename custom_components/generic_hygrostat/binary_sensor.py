@@ -82,17 +82,18 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     min_humidity = config.get(CONF_MIN_HUMIDITY)
 
     async_add_devices([GenericHygrostat(
-        hass, name, sensor_id, delta_trigger, target_offset, min_on_time, max_on_time, sample_interval, min_humidity)])
+        hass, name, unique_id, sensor_id, delta_trigger, target_offset, min_on_time, max_on_time, sample_interval, min_humidity)])
 
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
-    def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
+    def __init__(self, hass, name, unique_id, sensor_id, delta_trigger, target_offset,
                  min_on_time, max_on_time, sample_interval, min_humidity):
         """Initialize the hygrostat."""
         self.hass = hass
         self._name = name
+        self._unique_id = unique_id
         self.sensor_id = sensor_id
         self.delta_trigger = delta_trigger
         self.target_offset = target_offset
