@@ -240,6 +240,10 @@ class GenericHygrostat(Entity):
     def name(self):
         """Return the name of the sensor."""
         return self._name
+    
+    @property
+    def unique_id(self):
+        return self._unique_id
 
     @property
     def icon(self):
