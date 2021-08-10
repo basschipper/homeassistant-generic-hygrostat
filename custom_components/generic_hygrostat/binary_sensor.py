@@ -34,6 +34,7 @@ ATTR_MAX_ON_TIMER = 'max_on_timer'
 ATTR_MIN_HUMIDITY = 'min_humidity'
 
 CONF_SENSOR = 'sensor'
+CONF_ATTRIBUTE = 'attribute'
 CONF_DELTA_TRIGGER = 'delta_trigger'
 CONF_TARGET_OFFSET = 'target_offset'
 CONF_MIN_ON_TIME = 'min_on_time'
@@ -52,6 +53,7 @@ DEFAULT_MIN_HUMIDITY = 0
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_NAME): cv.string,
     vol.Required(CONF_SENSOR): cv.entity_id,
+    vol.Optional(CONF_ATTRIBUTE): cv.string,
     vol.Optional(CONF_DELTA_TRIGGER, default=DEFAULT_DELTA_TRIGGER):
         vol.Coerce(float),
     vol.Optional(CONF_TARGET_OFFSET, default=DEFAULT_TARGET_OFFSET):
@@ -72,6 +74,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     """Set up the Generic Hygrostat platform."""
     name = config.get(CONF_NAME)
     sensor_id = config.get(CONF_SENSOR)
+    sensor_attr = config.get(CONF_ATTRIBUTE)
     delta_trigger = config.get(CONF_DELTA_TRIGGER)
     target_offset = config.get(CONF_TARGET_OFFSET)
     min_on_time = config.get(CONF_MIN_ON_TIME)
@@ -80,13 +83,13 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     min_humidity = config.get(CONF_MIN_HUMIDITY)
 
     async_add_devices([GenericHygrostat(
-        hass, name, sensor_id, delta_trigger, target_offset, min_on_time, max_on_time, sample_interval, min_humidity)])
+        hass, name, sensor_id, sensor_attr, delta_trigger, target_offset, min_on_time, max_on_time, sample_interval, min_humidity)])
 
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
 
-    def __init__(self, hass, name, sensor_id, delta_trigger, target_offset,
+    def __init__(self, hass, name, sensor_id, sensor_attr, delta_trigger, target_offset,
                  min_on_time, max_on_time, sample_interval, min_humidity):
         """Initialize the hygrostat."""
         self.hass = hass
@@ -99,6 +102,7 @@ class GenericHygrostat(Entity):
         self.min_humidity = min_humidity
 
         self.sensor_humidity = None
+        self.sensor_attribute = sensor_attr
         self.target = None
         sample_size = int(SAMPLE_DURATION / sample_interval)
         self.samples = collections.deque([], sample_size)
@@ -161,7 +165,8 @@ class GenericHygrostat(Entity):
                 self.sensor_id, STATE_UNKNOWN))
 
         try:
-            self.sensor_humidity = float(sensor.state)
+            sensor_hum = sensor.state if self.sensor_attribute is None else sensor.attributes[self.sensor_attribute]
+            self.sensor_humidity = float(sensor_hum)
             self.add_sample(self.sensor_humidity)
         except ValueError:
             raise ValueError(
