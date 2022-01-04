@@ -184,12 +184,14 @@ class GenericHygrostat(Entity):
             return None
 
     def set_dehumidification_target(self):
-        """Setting dehumidification target to min humidity sample + offset."""
+        """Setting dehumidification target to sum of min humidity sample and offset."""
+        self.combined_offset_tuple = (min(self.samples), self.target_offset)
+        self.combined_offset = sum(self.combined_offset_tuple)
         if self.target is None:
-            if self.min_humidity >= min(self.samples) + self.target_offset:
+            if self.min_humidity >= self.combined_offset:
                 self.target = self.min_humidity
             else:
-                self.target = min(self.samples) + self.target_offset
+                self.target = self.combined_offset
 
     def reset_dehumidification_target(self):
         """Unsetting dehumidification target."""
