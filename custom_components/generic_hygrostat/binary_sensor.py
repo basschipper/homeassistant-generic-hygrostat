@@ -34,6 +34,7 @@ ATTR_MAX_ON_TIMER = "max_on_timer"
 ATTR_MIN_HUMIDITY = "min_humidity"
 
 CONF_SENSOR = "sensor"
+CONF_ATTRIBUTE = "attribute"
 CONF_DELTA_TRIGGER = "delta_trigger"
 CONF_TARGET_OFFSET = "target_offset"
 CONF_MIN_ON_TIME = "min_on_time"
@@ -53,6 +54,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_SENSOR): cv.entity_id,
+        vol.Optional(CONF_ATTRIBUTE): cv.string,
         vol.Optional(CONF_DELTA_TRIGGER, default=DEFAULT_DELTA_TRIGGER): vol.Coerce(float),
         vol.Optional(CONF_TARGET_OFFSET, default=DEFAULT_TARGET_OFFSET): vol.Coerce(float),
         vol.Optional(CONF_MIN_ON_TIME, default=DEFAULT_MIN_ON_TIME): cv.time_period,
@@ -69,6 +71,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     """Set up the Generic Hygrostat platform."""
     name = config.get(CONF_NAME)
     sensor_id = config.get(CONF_SENSOR)
+    sensor_attribute = config.get(CONF_ATTRIBUTE)
     delta_trigger = config.get(CONF_DELTA_TRIGGER)
     target_offset = config.get(CONF_TARGET_OFFSET)
     min_on_time = config.get(CONF_MIN_ON_TIME)
@@ -83,6 +86,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
                 hass,
                 name,
                 sensor_id,
+                sensor_attribute,
                 delta_trigger,
                 target_offset,
                 min_on_time,
@@ -103,6 +107,7 @@ class GenericHygrostat(Entity):
         hass,
         name,
         sensor_id,
+        sensor_attribute,
         delta_trigger,
         target_offset,
         min_on_time,
@@ -115,6 +120,7 @@ class GenericHygrostat(Entity):
         self.hass = hass
         self._name = name
         self.sensor_id = sensor_id
+        self.sensor_attribute = sensor_attribute
         self.delta_trigger = delta_trigger
         self.target_offset = target_offset
         self.min_on_time = min_on_time
@@ -178,7 +184,10 @@ class GenericHygrostat(Entity):
             raise ValueError("Humidity sensor '{}' has state '{}'".format(self.sensor_id, STATE_UNKNOWN))
 
         try:
-            self.sensor_humidity = float(sensor.state)
+            if self.sensor_attribute:
+                self.sensor_humidity = float(sensor.attributes[self.sensor_attribute])
+            else:
+                self.sensor_humidity = float(sensor.state)
             self.add_sample(self.sensor_humidity)
         except ValueError:
             raise ValueError("Unable to update humidity from sensor '{}' with value '{}'".format(self.sensor_id, sensor.state))
