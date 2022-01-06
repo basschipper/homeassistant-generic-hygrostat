@@ -16,14 +16,15 @@ In your `configuration.yaml` you'll need:
 binary_sensor:
 - platform: generic_hygrostat
   name: Bathroom Hygrostat
-  sensor: sensor.bathroom_climate_humidityy # Source humidity sensor
+  sensor: sensor.bathroom_climate_humidity # Source humidity sensor
+  attribute: humidityy # Optional use sensor attribute instead of state.
   delta_trigger: 3 # Optional humidity swing to detect. Default = 3
   target_offset: 3 # Optional dehumidification target offset. Default = 3
   min_on_time: 300 # Optional min on time in seconds. Default = 0 seconds
   max_on_time: 7200 # Optional safety max on time in seconds. Default = 7200 seconds
   sample_interval: 300 # Optional time between taking humidity samples in seconds, default 300 seconds
   min_humidity: 30 # Optional minimum humidity to enable dehumidification. Default = 0
-  unique_id: # An ID that uniquely identifies this sensor. Set this to a unique value to allow customization through the UI.
+  unique_id: # Optional ID that uniquely identifies this sensor. Set this to a unique value to allow customization through the UI.
 ```
 It will create a binary sensor called `binary_sensor.bathroom_hygrostat`.
 Next, add some automations to switch your fan:
