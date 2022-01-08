@@ -17,7 +17,7 @@ binary_sensor:
 - platform: generic_hygrostat
   name: Bathroom Hygrostat
   sensor: sensor.bathroom_climate_humidity # Source humidity sensor
-  attribute: humidityy # Optional use sensor attribute instead of state.
+  attribute: humidity # Optional use sensor attribute instead of state.
   delta_trigger: 3 # Optional humidity swing to detect. Default = 3
   target_offset: 3 # Optional dehumidification target offset. Default = 3
   min_on_time: 300 # Optional min on time in seconds. Default = 0 seconds
