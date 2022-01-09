@@ -24,7 +24,7 @@ binary_sensor:
   max_on_time: 7200 # Optional safety max on time in seconds. Default = 7200 seconds
   sample_interval: 300 # Optional time between taking humidity samples in seconds, default 300 seconds
   min_humidity: 30 # Optional minimum humidity to enable dehumidification. Default = 0
-  unique_id: # Optional ID that uniquely identifies this sensor. Set this to a unique value to allow customization through the UI.
+  unique_id: bathroom_hygrostat # Optional ID that uniquely identifies this sensor. Set this to a unique value to allow customization through the UI.
 ```
 It will create a binary sensor called `binary_sensor.bathroom_hygrostat`.
 Next, add some automations to switch your fan:
