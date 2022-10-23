@@ -40,7 +40,6 @@ CONF_MIN_ON_TIME = "min_on_time"
 CONF_MAX_ON_TIME = "max_on_time"
 CONF_MIN_HUMIDITY = "min_humidity"
 CONF_SAMPLE_DURATION = "sample_duration"
-
 CONF_SAMPLE_INTERVAL = "sample_interval"
 
 DEFAULT_DELTA_TRIGGER = 3
@@ -79,7 +78,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     min_on_time = config.get(CONF_MIN_ON_TIME)
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
-    sample_duration = config.get(CONF_SAMPLE_INTERVAL)
+    sample_duration = config.get(CONF_SAMPLE_DURATION)
     min_humidity = config.get(CONF_MIN_HUMIDITY)
     unique_id = config.get(CONF_UNIQUE_ID)
 
