@@ -22,7 +22,6 @@ _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["sensor"]
 
-SAMPLE_DURATION = timedelta(minutes=15)
 
 DEFAULT_NAME = "Generic Hygrostat"
 
@@ -40,7 +39,7 @@ CONF_TARGET_OFFSET = "target_offset"
 CONF_MIN_ON_TIME = "min_on_time"
 CONF_MAX_ON_TIME = "max_on_time"
 CONF_MIN_HUMIDITY = "min_humidity"
-
+CONF_SAMPLE_DURATION = "sample_duration"
 CONF_SAMPLE_INTERVAL = "sample_interval"
 
 DEFAULT_DELTA_TRIGGER = 3
@@ -48,6 +47,7 @@ DEFAULT_TARGET_OFFSET = 3
 DEFAULT_MIN_ON_TIME = timedelta(seconds=0)
 DEFAULT_MAX_ON_TIME = timedelta(seconds=7200)
 DEFAULT_SAMPLE_INTERVAL = timedelta(minutes=5)
+DEFAULT_SAMPLE_DURATION = timedelta(minutes=15)
 DEFAULT_MIN_HUMIDITY = 0
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -60,6 +60,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_MIN_ON_TIME, default=DEFAULT_MIN_ON_TIME): cv.time_period,
         vol.Optional(CONF_MAX_ON_TIME, default=DEFAULT_MAX_ON_TIME): cv.time_period,
         vol.Optional(CONF_SAMPLE_INTERVAL, default=DEFAULT_SAMPLE_INTERVAL): cv.time_period,
+        vol.Optional(CONF_SAMPLE_DURATION, default=DEFAULT_SAMPLE_DURATION): cv.time_period,
         vol.Optional(CONF_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY): vol.Coerce(float),
         vol.Optional(CONF_UNIQUE_ID): cv.string,
     }
@@ -76,6 +77,7 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
     min_on_time = config.get(CONF_MIN_ON_TIME)
     max_on_time = config.get(CONF_MAX_ON_TIME)
     sample_interval = config.get(CONF_SAMPLE_INTERVAL)
+    sample_duration = config.get(CONF_SAMPLE_DURATION)
     min_humidity = config.get(CONF_MIN_HUMIDITY)
     unique_id = config.get(CONF_UNIQUE_ID)
 
@@ -91,6 +93,7 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
                 min_on_time,
                 max_on_time,
                 sample_interval,
+		sample_duration,
                 min_humidity,
                 unique_id,
             )
@@ -112,6 +115,7 @@ class GenericHygrostat(Entity):
         min_on_time,
         max_on_time,
         sample_interval,
+	sample_duration,
         min_humidity,
         unique_id,
     ):
@@ -129,7 +133,7 @@ class GenericHygrostat(Entity):
 
         self.sensor_humidity = None
         self.target = None
-        sample_size = int(SAMPLE_DURATION / sample_interval)
+        sample_size = int(sample_duration / sample_interval)
         self.samples = collections.deque([], sample_size)
         self.min_on_timer = None
         self.max_on_timer = None
