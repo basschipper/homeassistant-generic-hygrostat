@@ -65,7 +65,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-
 async def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     """Set up the Generic Hygrostat platform."""
     name = config.get(CONF_NAME)
@@ -96,7 +95,6 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
             )
         ]
     )
-
 
 class GenericHygrostat(Entity):
     """Representation of a Generic Hygrostat device."""
@@ -137,12 +135,18 @@ class GenericHygrostat(Entity):
         self._state = STATE_OFF
         self._icon = "mdi:water-percent"
 
+        self.initial_run = True  # Flag to indicate initial run
+
         self._async_update()
 
         async_track_time_interval(hass, self._async_update, sample_interval)
 
     @callback
     def _async_update(self, now=None):
+        if self.initial_run:
+            self.initial_run = False
+            _LOGGER.debug("First run: the humidity sensor '%s' is probably not ready yet, so skipping this run", self.sensor_id)
+            return
         try:
             self.update_humidity()
         except ValueError as ex:
